@@ -42,6 +42,9 @@ def main_web() -> None:
 
     Environment:
       - NODERED_URL, NODERED_USERNAME, NODERED_PASSWORD (required)
+      - MCP_HOST (optional, default 127.0.0.1) — bind address. The default
+        is loopback only; expose to a network by setting MCP_HOST=0.0.0.0
+        (typically you'd front this with a reverse proxy regardless).
       - MCP_PORT (optional, default 8086)
       - MCP_SECRET_PATH (optional, default "/mcp")
       - LOG_LEVEL (optional, default INFO)
@@ -58,12 +61,13 @@ def main_web() -> None:
         print(f"ERROR: MCP_PORT must be an integer, got {port_str!r}", file=sys.stderr)
         sys.exit(1)
 
+    host = os.getenv("MCP_HOST", "127.0.0.1")
     path = os.getenv("MCP_SECRET_PATH", "/mcp")
 
     server = build_server()
     server.run(
         transport="http",
-        host="0.0.0.0",
+        host=host,
         port=port,
         path=path,
         stateless_http=True,

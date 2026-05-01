@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ha-mcp-nodered"
-version = "0.1.0"
+version = "0.1.1"
 description = "Standalone MCP server for the Node-RED Admin API — 11 tools for reading, patching, and deploying Node-RED flows."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
