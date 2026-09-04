@@ -16,6 +16,7 @@ from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
 from pydantic import Field
 
+from .backup import snapshot_flows
 from .client import NodeRedClient
 from .errors import (
     ErrorCode,
@@ -328,6 +329,8 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
         for key, value in patches.items():
             target[key] = value
 
+        backup_path = await snapshot_flows(client, "update_node")
+
         try:
             revision = await client.post_flows(flows)
         except ToolError:
@@ -348,6 +351,7 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                     "patched_fields": list(patches.keys()),
                 },
                 "revision": revision if isinstance(revision, str) else None,
+                "backup": str(backup_path),
             },
         }
 
@@ -449,6 +453,8 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                 )
             )
 
+        backup_path = await snapshot_flows(client, "update_flow_nodes")
+
         try:
             revision = await client.post_flows(flows)
         except ToolError:
@@ -465,6 +471,7 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                 "patched_nodes": patched,
                 "errors": item_errors or None,
                 "revision": revision if isinstance(revision, str) else None,
+                "backup": str(backup_path),
             },
         }
 
@@ -524,6 +531,8 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
 
         kept.extend(new_flow_nodes)
 
+        backup_path = await snapshot_flows(client, "replace_flow_nodes")
+
         try:
             revision = await client.post_flows(kept)
         except ToolError:
@@ -542,6 +551,7 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                 "old_node_count": old_node_count,
                 "new_node_count": len(new_flow_nodes),
                 "revision": revision if isinstance(revision, str) else None,
+                "backup": str(backup_path),
             },
         }
 
@@ -626,6 +636,8 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
         flows.append(flow_tab)
         flows.extend(flow_nodes)
 
+        backup_path = await snapshot_flows(client, "create_flow")
+
         try:
             revision = await client.post_flows(flows)
         except ToolError:
@@ -643,6 +655,7 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                 "flow_label": flow_tab.get("label"),
                 "node_count": len(flow_nodes),
                 "revision": revision if isinstance(revision, str) else None,
+                "backup": str(backup_path),
             },
         }
 
@@ -682,6 +695,8 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
             else:
                 kept.append(node)
 
+        backup_path = await snapshot_flows(client, "delete_flow")
+
         try:
             revision = await client.post_flows(kept)
         except ToolError:
@@ -699,6 +714,7 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                 "flow_label": flow_tab.get("label", ""),
                 "deleted_node_count": deleted_count,
                 "revision": revision if isinstance(revision, str) else None,
+                "backup": str(backup_path),
             },
         }
 
@@ -722,6 +738,8 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
         ],
     ) -> dict[str, Any]:
         """Replace the entire Node-RED /flows array (full deployment)."""
+        backup_path = await snapshot_flows(client, "replace_flows")
+
         try:
             revision = await client.post_flows(flows)
         except ToolError:
@@ -735,6 +753,7 @@ def register_tools(mcp: FastMCP, client: NodeRedClient) -> None:
                 "message": "Flows deployed successfully",
                 "node_count": len(flows),
                 "revision": revision if isinstance(revision, str) else None,
+                "backup": str(backup_path),
             },
         }
 

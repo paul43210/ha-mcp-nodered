@@ -25,3 +25,6 @@ build/
 *.swp
 *.swo
 *~
+
+# Pre-write flow snapshots (see src/ha_mcp_nodered/backup.py)
+flow-backups/
